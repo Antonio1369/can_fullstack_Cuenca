@@ -1,0 +1,22 @@
+# Ignore build results
+/bin/
+/obj/
+
+# User-specific files
+.idea/
+/.vscode/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer files
+Thumbs.db
+Desktop.ini
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/

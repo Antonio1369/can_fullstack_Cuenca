@@ -1,0 +1,7 @@
+scraper/venv_scraper
+rag/llama_venv
+rag/venv_django
+
+*.pyc
+__pycache__
+*.log

@@ -1,0 +1,10 @@
+/prueba-SGCAN-F-15-2025-master
+diagrama-sgcan-f15-2025.jpg
+.DS_Store
+/volumes
+/rag/static
+/hub/Migrations
+*.pyc
+scraper/tests/test_main.py
+test_hub.py
+/rag/api_rag/migrations
