@@ -3,6 +3,8 @@ services:
     image: postgres:14
     container_name: f1_postgres
     hostname: f1_postgres
+    env_file:
+      - ./envs/.env.postgres  
     volumes:
       - ./volumes/postgres_data:/var/lib/postgresql/data
     networks:
@@ -53,6 +55,7 @@ services:
       - postgres
     networks:
       - f1_network
+    restart: "unless-stopped"
       
   scraper:
     container_name: f1_scraper
@@ -69,6 +72,7 @@ services:
       - redis
     networks:
       - f1_network
+    restart: "unless-stopped"
 
   
   hub:
