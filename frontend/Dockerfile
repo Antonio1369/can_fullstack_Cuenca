@@ -9,4 +9,5 @@ WORKDIR /app
 COPY pnpm-lock.yaml package.json ./
 RUN pnpm install
 
+EXPOSE 3000
 RUN pnpm dev
