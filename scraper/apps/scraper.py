@@ -1,11 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-from database import SessionLocal
-from models import Noticias
 from settings import OLLAMA_EMBEDDING_URL
-import json
 
-def scrape_url(url: str) -> dict:
+def scrape_url(url: str, userId: int) -> dict:
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -14,23 +11,24 @@ def scrape_url(url: str) -> dict:
         title = soup.title.string.strip() if soup.title else "Sin título"
         content = " ".join([p.get_text() for p in soup.find_all('p')])
 
-        # Llamada al modelo de embeddings de Ollama
         embedding = generate_embedding(content)
 
-        # Devolver el resultado con el embedding
         return {
             "url": url,
             "title": title,
             "content": content,
-            "embedding": embedding
+            "embedding": embedding,
+            "userId": userId
         }
     except Exception as e:
         return {
             "url": url,
             "title": "Error",
             "content": str(e),
-            "embedding": None
+            "embedding": None,
+            "userId": userId
         }
+
 
 def generate_embedding(text: str) -> list:
     """Genera el embedding utilizando el modelo de Ollama"""
@@ -50,20 +48,3 @@ def generate_embedding(text: str) -> list:
     else:
         return []
 
-def save_scraped_data(data: dict):
-    db = SessionLocal()
-    try:
-        # Guardar los datos y el embedding
-        noticias = Noticias(
-            url=data["url"],
-            title=data["title"],
-            content=data["content"],
-            embedding=json.dumps(data["embedding"])  # Guardamos el embedding como un JSON
-        )
-        db.add(noticias)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        print(f"Error saving data: {str(e)}")
-    finally:
-        db.close()

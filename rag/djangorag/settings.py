@@ -58,7 +58,7 @@ WSGI_APPLICATION = 'djangorag.wsgi.application'
 # Database
 result = urlparse(os.environ.get('DATABASE_URL'))
 
-if DEBUG:
+if not DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -112,7 +112,7 @@ USE_TZ = True
 
 #CSRF_TRUSTED_ORIGINS = ['localhost']
 
-if DEBUG:
+if not DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOWED_ORIGINS = [

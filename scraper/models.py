@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from database import engine, SessionLocal
 
 Base = declarative_base()
@@ -13,16 +14,13 @@ class Noticias(Base):
     content = Column(Text)
     embedding = Column(Text) 
 
-Base.metadata.create_all(bind=engine)
+class UserFile(Base):
+    __tablename__ = "user_files"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)  # Relación simple con usuario (int)
+    filename = Column(String, nullable=False)
+    task_id = Column(String, nullable=True)
+    uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+    processed = Column(Boolean, default=False)
 
-def save_scraped_data(data: dict):
-    db = SessionLocal()
-    try:
-        noticias = Noticias(**data)
-        db.add(noticias)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise e
-    finally:
-        db.close()
+Base.metadata.create_all(bind=engine)

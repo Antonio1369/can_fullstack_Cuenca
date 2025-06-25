@@ -30,9 +30,7 @@ class UserQuery(models.Model):
 
 class UserFile(models.Model): 
     user = models.ForeignKey(User, related_name="files", on_delete=models.CASCADE)
-    file = models.FileField(upload_to='user_uploads/%Y/%m/%d/', validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'txt', 'csv'])])
-    original_filename = models.CharField(max_length=255)
-    file_size = models.PositiveIntegerField()
+    filename = models.CharField(max_length=255)
     task_id = models.CharField(max_length=255, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     processed = models.BooleanField(default=False)
@@ -43,8 +41,7 @@ class UserFile(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.pk:  
-            self.original_filename = self.file.name
-            self.file_size = self.file.size
+            self.filename = self.file.name
         super().save(*args, **kwargs)
     
     @property

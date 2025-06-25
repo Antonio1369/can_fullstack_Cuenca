@@ -1,5 +1,5 @@
 from django.contrib import admin
-from api_rag.models import Noticias, UserQuery, User
+from api_rag.models import Noticias, UserQuery, User, UserFile
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
@@ -31,13 +31,21 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('username', 'email', 'password1', 'password2'),
         }),
     )
-    list_display = ('username', 'email', 'is_staff', 'is_active')
+    list_display = ('id','username', 'email', 'is_staff', 'is_active')
     search_fields = ('username', 'email')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions',)
     
+
+
+class UserFileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'filename', 'task_id', 'uploaded_at', 'processed')
+    list_filter = ('processed', 'uploaded_at', 'user')
+    search_fields = ('filename', 'task_id', 'user__username')
+    ordering = ('-uploaded_at',)
     
 admin.site.register(User, UserAdmin)
 admin.site.register(Noticias, NoticiasAdmin)
+admin.site.register(UserFile,UserFileAdmin)
 admin.site.register(UserQuery, UserQueryAdmin)

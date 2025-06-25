@@ -3,130 +3,24 @@ using hub.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 using System.Text.Json;
-using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using System;
 
-namespace hub.Controllers
+
+namespace hub.Controllers.RAG
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HubController : ControllerBase
+    public class RAGController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ApplicationDbContext _context;
 
-        public HubController(IHttpClientFactory httpClientFactory, ApplicationDbContext context)
+        public RAGController(IHttpClientFactory httpClientFactory, ApplicationDbContext context)
         {
             _httpClientFactory = httpClientFactory;
             _context = context;
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser([FromBody] User user)
-        {
-            if (user == null || 
-                string.IsNullOrEmpty(user.Username) || 
-                string.IsNullOrEmpty(user.Password) || 
-                string.IsNullOrEmpty(user.Email))
-            {
-                return BadRequest(new { error = "Todos los campos del usuario son obligatorios." });
-            }
-
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == user.Username || u.Email == user.Email);
-                
-            if (existingUser != null)
-            {
-                return Conflict(new { error = "El nombre de usuario o correo electrónico ya está en uso." });
-            }
-
-            try
-            {
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Usuario registrado exitosamente", userId = user.Id });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Error al registrar usuario", details = ex.Message });
-            }
-        }
-
-        [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest(new { error = "No se ha seleccionado un archivo válido." });
-            }
-
-            try
-            {
-                // Crear directorio si no existe
-                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
-                if (!Directory.Exists(uploadsDir))
-                {
-                    Directory.CreateDirectory(uploadsDir);
-                }
-
-                var filePath = Path.Combine(uploadsDir, file.FileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                return Ok(new { 
-                    message = "Archivo cargado exitosamente",
-                    fileName = file.FileName,
-                    fileSize = file.Length,
-                    filePath = filePath
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Error al subir el archivo", details = ex.Message });
-            }
-        }
-
-        [HttpPost("process")]
-        public async Task<IActionResult> ProcessLinks([FromBody] List<string> links)
-        {
-            if (links == null || links.Count == 0)
-            {
-                return BadRequest(new { error = "La lista de enlaces no puede estar vacía." });
-            }
-
-            try
-            {
-                var client = _httpClientFactory.CreateClient("ScraperAPI");
-                var response = await client.PostAsJsonAsync("/process", links);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return StatusCode(
-                        (int)response.StatusCode, 
-                        new { 
-                            error = "Error al procesar los enlaces",
-                            details = errorContent
-                        });
-                }
-
-                var result = await response.Content.ReadFromJsonAsync<object>();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { 
-                    error = "Error interno al procesar enlaces", 
-                    details = ex.Message 
-                });
-            }
         }
 
         [HttpPost("query")]
@@ -137,7 +31,7 @@ namespace hub.Controllers
                 return BadRequest(new { error = "El campo 'query' es obligatorio." });
             }
 
-            const string djangoUrl = "http://localhost:8000/api/query-rag/";
+            const string djangoUrl = "http://localhost:9030/api/query-rag/";
             var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromMinutes(2);
 
