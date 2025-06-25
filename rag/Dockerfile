@@ -6,10 +6,10 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-RUN python manage.py makemigrations api_rag
-RUN python manage.py migrate
+#RUN python manage.py makemigrations api_rag
+#RUN python manage.py migrate
 
-RUN python manage.py collectstatic --noinput
+#RUN python manage.py collectstatic --noinput
 
 EXPOSE 8001
 

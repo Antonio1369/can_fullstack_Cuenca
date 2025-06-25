@@ -25,37 +25,33 @@ export interface IntegrationCardProps {
 
 export function IntegrationCard({ integration }: IntegrationCardProps): React.JSX.Element {
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <CardContent sx={{ flex: '1 1 auto' }}>
+    <Card sx={{ backgroundColor: '#fff', borderRadius: 2, boxShadow: 2 }}>
+      <CardContent sx={{ paddingBottom: 2 }}>
         <Stack spacing={2}>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Avatar src={integration.logo} variant="square" />
-          </Box>
-          <Stack spacing={1}>
-            <Typography align="center" variant="h5">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <Avatar src={integration.logo} variant="square" sx={{ width: 40, height: 40 }} />
+            <Typography sx={{ marginLeft: 2, fontWeight: 'bold' }} variant="body1">
               {integration.title}
             </Typography>
-            <Typography align="center" variant="body1">
-              {integration.description}
-            </Typography>
-          </Stack>
+          </Box>
+          <Typography variant="body2">{integration.description}</Typography>
         </Stack>
       </CardContent>
       <Divider />
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-        <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <ClockIcon fontSize="var(--icon-fontSize-sm)" />
-          <Typography color="text.secondary" display="inline" variant="body2">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', padding: 2 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <ClockIcon fontSize="1rem" />
+          <Typography color="text.secondary" variant="body2">
             Updated {dayjs(integration.updatedAt).format('MMM D, YYYY')}
           </Typography>
         </Stack>
-        <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <DownloadIcon fontSize="var(--icon-fontSize-sm)" />
-          <Typography color="text.secondary" display="inline" variant="body2">
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <DownloadIcon fontSize="1rem" />
+          <Typography color="text.secondary" variant="body2">
             {integration.installs} installs
           </Typography>
         </Stack>
-      </Stack>
+      </Box>
     </Card>
   );
 }

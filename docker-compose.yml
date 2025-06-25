@@ -1,5 +1,26 @@
 services:
+  postgres:
+    image: postgres:14
+    container_name: f1_postgres
+    hostname: f1_postgres
+    volumes:
+      - ./volumes/postgres_data:/var/lib/postgresql/data
+    networks:
+      - f1_network
+    ports:
+      - "9040:5432"
+    restart: "unless-stopped"
 
+  redis:
+    image: redis:6.2-alpine
+    container_name: f1_redis
+    hostname: f1_redis
+    ports:
+      - "9050:6379"
+    networks:
+      - f1_network
+    restart: "unless-stopped"
+    
   react:
     container_name: f1_react
     build:
@@ -17,6 +38,39 @@ services:
     networks:
       - f1_network
 
+  rag:
+    container_name: f1_rag
+    build:
+      context: ./rag
+      dockerfile: Dockerfile
+    ports:
+      - "9030:8001"
+    volumes:
+      - ./rag:/app
+      - ./envs/.env.rag:/app/.env
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - f1_network
+      
+  scraper:
+    container_name: f1_scraper
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+    ports:
+      - "9020:8000"
+    volumes:
+      - ./scraper:/app
+      - ./envs/.env.scraper:/app/.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - f1_network
+
+  
   hub:
     container_name: f1_hub
     build:
@@ -33,62 +87,11 @@ services:
       - ConnectionStrings__DefaultConnection=Host=f1_postgres;Database=f1_database;Username=f1_sgcan;Password=f1_sgcan123456
     depends_on:
       - postgres
+      - rag
+      - scraper
     networks:
       - f1_network
 
-  rag:
-    container_name: f1_rag
-    build:
-      context: ./rag
-      dockerfile: Dockerfile
-    ports:
-      - "9030:8001"
-    volumes:
-      - ./rag:/app
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - f1_network
-      
-  scraper:
-    container_name: f1_scraper
-    build:
-      context: ./scraper
-      dockerfile: Dockerfile
-    ports:
-      - "9020:8000"
-    volumes:
-      - ./scraper:/app
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - f1_network
-
-  postgres:
-    image: postgres:14
-    container_name: f1_postgres
-    hostname: f1_postgres
-    volumes:
-      - ./volumes/postgres_data:/var/lib/postgresql/data
-    env_file:
-      - ./envs/.env.postgres
-    networks:
-      - f1_network
-    ports:
-      - "9040:5432"
-    restart: "unless-stopped"
-
-  redis:
-    image: redis:6.2-alpine
-    container_name: f1_redis
-    hostname: f1_redis
-    ports:
-      - "9050:6379"
-    networks:
-      - f1_network
-    restart: "unless-stopped"
 
 networks:
   f1_network:

@@ -9,3 +9,4 @@ scraper/tests/test_main.py
 test_hub.py
 /rag/api_rag/migrations
 /hub/Uploads
+frontend.zip

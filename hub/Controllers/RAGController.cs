@@ -31,7 +31,7 @@ namespace hub.Controllers.RAG
                 return BadRequest(new { error = "El campo 'query' es obligatorio." });
             }
 
-            const string djangoUrl = "http://localhost:9030/api/query-rag/";
+            const string djangoUrl = "http://localhost:8001/api/query-rag/";
             var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromMinutes(2);
 

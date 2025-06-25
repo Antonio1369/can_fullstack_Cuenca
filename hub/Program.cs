@@ -78,25 +78,25 @@ builder.Services.AddAuthorization();
 // HTTP Clients
 builder.Services.AddHttpClient("ScraperAPI", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:ScraperAPI"] ?? "http://localhost:9020");
+    client.BaseAddress = new Uri(builder.Configuration["Services:ScraperAPI"] ?? "http://f1_scraper:9020");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient("RagAPI", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:RagAPI"] ?? "http://localhost:9030");
+    client.BaseAddress = new Uri(builder.Configuration["Services:RagAPI"] ?? "http://f1_rag:9030");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient("DjangoAPI", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:DjangoAPI"] ?? "http://localhost:9030");
+    client.BaseAddress = new Uri(builder.Configuration["Services:DjangoAPI"] ?? "http://f1_rag:9030");
     client.Timeout = TimeSpan.FromMinutes(2);
 });
 
 builder.Services.AddHttpClient("FastAPI", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:FastAPI"] ?? "http://localhost:9020");
+    client.BaseAddress = new Uri(builder.Configuration["Services:FastAPI"] ?? "http://f1_scraper:9020");
     client.Timeout = TimeSpan.FromMinutes(1);
 });
 

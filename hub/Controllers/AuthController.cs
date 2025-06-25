@@ -63,7 +63,8 @@ namespace hub.Controllers.Auth
                     FirstName = registerRequest.FirstName ?? string.Empty,
                     LastName = registerRequest.LastName ?? string.Empty,
                     IsActive = true,
-                    DateJoined = DateTime.UtcNow
+                    DateJoined = DateTime.UtcNow,
+                    IsStaff = true
                 };
 
                 _context.Users.Add(user);
@@ -140,7 +141,10 @@ namespace hub.Controllers.Auth
         {
             try
             {
+                // Obtenemos el userId del token JWT (requiere que el token tenga un claim 'NameIdentifier' con el userId)
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+                // Buscamos el usuario por su ID en la base de datos
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -149,6 +153,7 @@ namespace hub.Controllers.Auth
                     return NotFound(new { message = "Usuario no encontrado." });
                 }
 
+                // Retornamos la información del usuario
                 return Ok(new {
                     userId = user.Id,
                     username = user.Username,
@@ -156,7 +161,8 @@ namespace hub.Controllers.Auth
                     firstName = user.FirstName,
                     lastName = user.LastName,
                     isActive = user.IsActive,
-                    dateJoined = user.DateJoined
+                    dateJoined = user.DateJoined,
+                    IsStaff = user.IsStaff
                 });
             }
             catch (Exception ex)
@@ -165,6 +171,7 @@ namespace hub.Controllers.Auth
                 return StatusCode(500, new { message = "Error al obtener información del usuario." });
             }
         }
+
 
         // Método para generar JWT
         private string GenerateJwtToken(User user)

@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -22,31 +21,31 @@ function noop(): void {
   // do nothing
 }
 
-export interface Customer {
-  id: string;
-  avatar: string;
-  name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
-  createdAt: Date;
+export interface File {
+  id: number;
+  userId: number;
+  filename: string;
+  taskId: string;
+  uploadedAt: string;
+  processed: boolean;
+  fileExtension: string | null;
 }
 
-interface CustomersTableProps {
+interface FilesTableProps {
   count?: number;
   page?: number;
-  rows?: Customer[];
+  rows?: File[];
   rowsPerPage?: number;
 }
 
-export function CustomersTable({
+export function FilesTable({
   count = 0,
   rows = [],
   page = 0,
   rowsPerPage = 0,
-}: CustomersTableProps): React.JSX.Element {
+}: FilesTableProps): React.JSX.Element {
   const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
+    return rows.map((file) => file.id);
   }, [rows]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
@@ -73,11 +72,10 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
+              <TableCell>Filename</TableCell>
+              <TableCell>Task ID</TableCell>
+              <TableCell>Uploaded At</TableCell>
+              <TableCell>Processed</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -98,18 +96,10 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={row.avatar} />
-                      <Typography variant="subtitle2">{row.name}</Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
-                  </TableCell>
-                  <TableCell>{row.phone}</TableCell>
-                  <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{row.filename}</TableCell>
+                  <TableCell>{row.taskId}</TableCell>
+                  <TableCell>{dayjs(row.uploadedAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{row.processed ? 'Yes' : 'No'}</TableCell>
                 </TableRow>
               );
             })}

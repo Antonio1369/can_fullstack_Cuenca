@@ -1,106 +1,119 @@
+'use client'; // Directiva para cliente
+
 import * as React from 'react';
-import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
-import { Download as DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
-import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
-import dayjs from 'dayjs';
-
-import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
-import type { Integration } from '@/components/dashboard/integrations/integrations-card';
-import { CompaniesFilters } from '@/components/dashboard/integrations/integrations-filters';
-
-export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
-
-const integrations = [
-  {
-    id: 'INTEG-006',
-    title: 'Dropbox',
-    description: 'Dropbox is a file hosting service that offers cloud storage, file synchronization, a personal cloud.',
-    logo: '/assets/logo-dropbox.png',
-    installs: 594,
-    updatedAt: dayjs().subtract(12, 'minute').toDate(),
-  },
-  {
-    id: 'INTEG-005',
-    title: 'Medium Corporation',
-    description: 'Medium is an online publishing platform developed by Evan Williams, and launched in August 2012.',
-    logo: '/assets/logo-medium.png',
-    installs: 625,
-    updatedAt: dayjs().subtract(43, 'minute').subtract(1, 'hour').toDate(),
-  },
-  {
-    id: 'INTEG-004',
-    title: 'Slack',
-    description: 'Slack is a cloud-based set of team collaboration tools and services, founded by Stewart Butterfield.',
-    logo: '/assets/logo-slack.png',
-    installs: 857,
-    updatedAt: dayjs().subtract(50, 'minute').subtract(3, 'hour').toDate(),
-  },
-  {
-    id: 'INTEG-003',
-    title: 'Lyft',
-    description: 'Lyft is an on-demand transportation company based in San Francisco, California.',
-    logo: '/assets/logo-lyft.png',
-    installs: 406,
-    updatedAt: dayjs().subtract(7, 'minute').subtract(4, 'hour').subtract(1, 'day').toDate(),
-  },
-  {
-    id: 'INTEG-002',
-    title: 'GitHub',
-    description: 'GitHub is a web-based hosting service for version control of code using Git.',
-    logo: '/assets/logo-github.png',
-    installs: 835,
-    updatedAt: dayjs().subtract(31, 'minute').subtract(4, 'hour').subtract(5, 'day').toDate(),
-  },
-  {
-    id: 'INTEG-001',
-    title: 'Squarespace',
-    description: 'Squarespace provides software as a service for website building and hosting. Headquartered in NYC.',
-    logo: '/assets/logo-squarespace.png',
-    installs: 435,
-    updatedAt: dayjs().subtract(25, 'minute').subtract(6, 'hour').subtract(6, 'day').toDate(),
-  },
-] satisfies Integration[];
+import TextField from '@mui/material/TextField';
+import { CircularProgress } from '@mui/material';
 
 export default function Page(): React.JSX.Element {
+  const [query, setQuery] = React.useState<string>(''); // Consulta del usuario
+  const [history, setHistory] = React.useState<{ user: string, bot: string | null }[]>([]); // Historial de mensajes
+  const [loading, setLoading] = React.useState<boolean>(false); // Para mostrar el indicador de carga
+
+  // Función para enviar la consulta al backend
+  const handleSendQuery = async () => {
+    if (!query.trim()) return;
+
+    // Agregar el mensaje del usuario al historial, sin la respuesta del bot
+    setHistory((prevHistory) => [
+      ...prevHistory,
+      { user: query, bot: null }, // solo el mensaje del usuario (sin respuesta aún)
+    ]);
+    setQuery(''); // Limpiar la consulta del input
+
+    setLoading(true); // Mostrar el cargando mientras esperamos la respuesta de la API
+
+    try {
+      const response = await fetch('http://localhost:5000/api/rag/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await response.json();
+      const botResponse = data.answer || 'No se obtuvo respuesta.';
+
+      // Agregar la respuesta del bot al historial después de obtenerla
+      setHistory((prevHistory) => [
+        ...prevHistory.slice(0, prevHistory.length - 1), // Eliminar el mensaje de usuario anterior
+        { user: query, bot: botResponse }, // Agregar la respuesta del bot
+      ]);
+    } catch (error) {
+      console.error('Error al obtener respuesta:', error);
+      setHistory((prevHistory) => [
+        ...prevHistory.slice(0, prevHistory.length - 1),
+        { user: query, bot: 'Error en la consulta.' }, // Agregar respuesta de error
+      ]);
+    } finally {
+      setLoading(false); // Ocultar el indicador de carga
+    }
+  };
+
+  // Función para manejar el evento Enter
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevenir la acción predeterminada de Enter (por ejemplo, enviar el formulario)
+      handleSendQuery(); // Enviar el mensaje
+    }
+  };
+
   return (
-    <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
-        <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Integrations</Typography>
-          <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-            <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
-              Import
-            </Button>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}>
-              Export
-            </Button>
-          </Stack>
-        </Stack>
-        <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained">
-            Add
+    <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 3 }}>
+      <Stack spacing={3}>
+        {/* Cabecera del chat */}
+        <Typography variant="h4" align="center" sx={{ fontWeight: 'bold' }}>
+          Chatbot - Consultas
+        </Typography>
+
+        {/* Contenedor de mensajes */}
+        <Box
+          sx={{
+            height: '400px',
+            overflowY: 'auto',
+            border: '1px solid #ddd',
+            borderRadius: 2,
+            padding: 2,
+            backgroundColor: '#f9f9f9',
+          }}
+        >
+          {history.map((message, index) => (
+            <Box key={index} sx={{ marginBottom: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Usuario:</Typography>
+              <Typography variant="body1" sx={{ marginLeft: 2, backgroundColor: '#e1f5fe', borderRadius: 1, padding: 1 }}>
+                {message.user}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', marginTop: 1 }}>Bot:</Typography>
+              {/* Mostramos el mensaje del bot solo si está disponible */}
+              <Typography variant="body1" sx={{ marginLeft: 2, backgroundColor: '#f1f8e9', borderRadius: 1, padding: 1 }}>
+                {message.bot ? message.bot : (loading ? <CircularProgress size={20} /> : '')}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Input y Botón para enviar consulta */}
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="Escribe tu consulta..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown} // Detectar presion de Enter
+            disabled={loading}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSendQuery}
+            disabled={loading}
+          >
+            Enviar
           </Button>
-        </div>
+        </Stack>
       </Stack>
-      <CompaniesFilters />
-      <Grid container spacing={3}>
-        {integrations.map((integration) => (
-          <Grid key={integration.id} lg={4} md={6} xs={12}>
-            <IntegrationCard integration={integration} />
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Pagination count={3} size="small" />
-      </Box>
-    </Stack>
+    </Box>
   );
 }
